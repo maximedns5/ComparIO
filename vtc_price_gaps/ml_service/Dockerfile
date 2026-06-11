@@ -3,17 +3,14 @@ FROM python:3.11-slim
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc g++ libpq-dev \
+    gcc \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
-# shared/ est monté via volume dans docker-compose, mais copié ici pour le build
-COPY ../shared /app/shared
 
 ENV PYTHONPATH=/app
 
-# CMD est surchargé dans docker-compose selon le service (scheduler ou api)
-CMD ["python", "scheduler.py"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001", "--workers", "2"]
